@@ -10,7 +10,9 @@ public static class FactoryBlockoutGenerator
 {
     private const string ScenePath = "Assets/Scenes/FactoryBlockout.unity";
     private const string MaterialPath = "Assets/Blockout/Materials";
-    private const string OutputPath = @"C:\Users\isu\Documents\Codex\2026-10-11\c\outputs";
+    private const string NavMeshDataPath = "Assets/Blockout/NavMeshes/FactoryBlockoutNavMesh.asset";
+    private static string OutputPath => Path.GetFullPath(
+        Path.Combine(Application.dataPath, "..", "Builds", "BlockoutPreviews"));
 
     private static Material floorMat;
     private static Material wallMat;
@@ -47,16 +49,25 @@ public static class FactoryBlockoutGenerator
         surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
         surface.layerMask = ~0;
         surface.BuildNavMesh();
+        EnsureFolder("Assets/Blockout/NavMeshes");
+        if (AssetDatabase.LoadAssetAtPath<NavMeshData>(NavMeshDataPath) != null)
+            AssetDatabase.DeleteAsset(NavMeshDataPath);
+        AssetDatabase.CreateAsset(surface.navMeshData, NavMeshDataPath);
+        EditorUtility.SetDirty(surface);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene, ScenePath);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        CaptureBlockoutViews(GameObject.Find("Main Camera").GetComponent<Camera>());
-        FocusSceneView(root.transform.position);
+        if (!Application.isBatchMode)
+        {
+            CaptureBlockoutViews(GameObject.Find("Main Camera").GetComponent<Camera>());
+            FocusSceneView(root.transform.position);
+        }
         Debug.Log("Factory blockout saved to " + ScenePath);
-        EditorUtility.DisplayDialog("Factory Blockout", "Scene generated. Click the floor to move and click marked objects to inspect.", "OK");
+        if (!Application.isBatchMode)
+            EditorUtility.DisplayDialog("Factory Blockout", "Scene generated. Click the floor to move and click marked objects to inspect.", "OK");
     }
 
     private static void CreateMaterials()

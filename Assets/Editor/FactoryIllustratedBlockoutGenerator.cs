@@ -10,7 +10,9 @@ public static class FactoryIllustratedBlockoutGenerator
 {
     private const string ScenePath = "Assets/Scenes/FactoryIllustratedBlockout.unity";
     private const string ArtPath = "Assets/Blockout/IllustratedArt";
-    private const string OutputPath = @"C:\Users\isu\Documents\Codex\2026-10-11\c\outputs";
+    private const string NavMeshDataPath = "Assets/Blockout/NavMeshes/FactoryIllustratedBlockoutNavMesh.asset";
+    private static string OutputPath => Path.GetFullPath(
+        Path.Combine(Application.dataPath, "..", "Builds", "BlockoutPreviews"));
     private static Camera sceneCamera;
     private static Material floorMaterial;
     private static Material characterMaterial;
@@ -28,7 +30,7 @@ public static class FactoryIllustratedBlockoutGenerator
         scene.name = "FactoryIllustratedBlockout";
         var root = new GameObject("FACTORY • ILLUSTRATED 2.5D BLOCKOUT");
 
-        floorMaterial = MakeMaterial("Blockout_Floor", new Color(0.21f, 0.23f, 0.22f));
+        floorMaterial = MakeMaterial("Blockout_IllustratedFloor", new Color(0.21f, 0.23f, 0.22f));
         characterMaterial = MakeMaterial("Blockout_Player_Teal", new Color(0.20f, 0.57f, 0.53f));
         spriteOverlayMaterial = CreateSpriteOverlayMaterial();
         CreateFloor(root.transform);
@@ -42,8 +44,11 @@ public static class FactoryIllustratedBlockoutGenerator
         EditorSceneManager.SaveScene(scene, ScenePath);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        CaptureViews(sceneCamera);
-        FocusSceneView(root.transform.position);
+        if (!Application.isBatchMode)
+        {
+            CaptureViews(sceneCamera);
+            FocusSceneView(root.transform.position);
+        }
         Debug.Log("Illustrated blockout saved to " + ScenePath);
         if (!Application.isBatchMode)
             EditorUtility.DisplayDialog("Illustrated Factory Blockout", "Finished. The scene combines an illustrated 2D factory backdrop with an isometric 3D player, five interactive prop blockouts, and a clear raised station bay. The original FactoryBlockout scene was left in place.", "OK");
@@ -316,6 +321,11 @@ public static class FactoryIllustratedBlockoutGenerator
         surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
         surface.layerMask = ~0;
         surface.BuildNavMesh();
+        EnsureFolder("Assets/Blockout/NavMeshes");
+        if (AssetDatabase.LoadAssetAtPath<NavMeshData>(NavMeshDataPath) != null)
+            AssetDatabase.DeleteAsset(NavMeshDataPath);
+        AssetDatabase.CreateAsset(surface.navMeshData, NavMeshDataPath);
+        EditorUtility.SetDirty(surface);
     }
 
     private static void CreateCameraAndLights(Transform parent)

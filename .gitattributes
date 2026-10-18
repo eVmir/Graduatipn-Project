@@ -1,0 +1,25 @@
+* text=auto
+
+# Keep Unity and source text consistent across Windows and macOS.
+*.cs text eol=lf
+*.meta text eol=lf whitespace=-blank-at-eol
+*.unity text eol=lf
+*.unity whitespace=-blank-at-eol
+*.unity merge=unityyamlmerge
+*.prefab text eol=lf whitespace=-blank-at-eol
+*.prefab merge=unityyamlmerge
+*.mat text eol=lf whitespace=-blank-at-eol
+*.shader text eol=lf
+*.inputactions text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+
+# Preserve imported art and other binary assets byte-for-byte.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.psd binary
+*.fbx binary
+*.wav binary
+*.mp3 binary
+*.mp4 binary
